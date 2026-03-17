@@ -1,4 +1,3 @@
-// components/Auth.tsx
 "use client"
 
 import { useState } from 'react'
@@ -7,14 +6,27 @@ import { supabase } from '@/lib/supabase'
 export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [nickname, setNickname] = useState('') // новое поле
   const [isSignUp, setIsSignUp] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleAuth = async () => {
     setError(null)
+
+    if (isSignUp && !nickname.trim()) {
+      setError('Введите никнейм')
+      return
+    }
+
     let res
     if (isSignUp) {
-      res = await supabase.auth.signUp({ email, password })
+      res = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { nickname: nickname.trim() } // передаём ник в метаданные
+        }
+      })
     } else {
       res = await supabase.auth.signInWithPassword({ email, password })
     }
@@ -40,6 +52,16 @@ export default function Auth() {
           onChange={e => setEmail(e.target.value)}
           className="w-full bg-zinc-800 p-4 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+
+        {isSignUp && (
+          <input
+            type="text"
+            placeholder="Никнейм (отображается в чате)"
+            value={nickname}
+            onChange={e => setNickname(e.target.value)}
+            className="w-full bg-zinc-800 p-4 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        )}
 
         <input
           type="password"
